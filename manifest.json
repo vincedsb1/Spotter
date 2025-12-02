@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "Spotter",
+  "version": "1.1",
+  "description": "Surligne automatiquement des listes de mots définis (Green/Red flags).",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/favicon-16x16.png",
+      "32": "icons/favicon-32x32.png",
+      "48": "icons/favicon-96x96.png",
+      "128": "icons/web-app-manifest-192x192.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/web-app-manifest-512x512.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "toggle-highlight": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+H",
+        "mac": "Command+Shift+H"
+      },
+      "description": "Activer/Désactiver le surlignage"
+    }
+  },
+  "icons": {
+    "16": "icons/favicon-16x16.png",
+    "32": "icons/favicon-32x32.png",
+    "48": "icons/favicon-96x96.png",
+    "128": "icons/web-app-manifest-192x192.png",
+    "512": "icons/web-app-manifest-512x512.png"
+  }
+}

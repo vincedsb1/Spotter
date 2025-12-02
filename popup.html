@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Spotter</title>
+        <link rel="stylesheet" href="styles.css" />
+        <!-- Material Icons for the pencil icon -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    </head>
+    <body class="popup-body">
+        <div class="header">
+            <h2>Spotter</h2>
+        </div>
+
+        <div class="main-action">
+            <button id="toggleBtn" class="btn btn-primary">
+                Activer le surlignage
+            </button>
+        </div>
+
+        <div class="lists-container">
+            <h3>Listes actives</h3>
+            <div id="listsList" class="lists-list">
+                <!-- Lists injected via JS -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <button id="openOptions" class="btn btn-text">
+                Options avancées
+            </button>
+            <button id="addListBtn" class="btn btn-secondary btn-sm">
+                + Nouvelle liste
+            </button>
+        </div>
+
+        <!-- Modal d'édition intégrée -->
+        <div id="editModal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <h3 id="modalTitle">Modifier la liste</h3>
+                
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="editName" placeholder="Nom de la liste">
+                </div>
+
+                <div class="form-group">
+                    <label>Couleur</label>
+                    <!-- Grille de couleurs générée en JS -->
+                    <div id="colorGrid" class="color-grid"></div>
+                    <input type="hidden" id="editColor">
+                </div>
+
+                <div class="form-group">
+                    <label>Mots-clés (un par ligne)</label>
+                    <textarea id="editEntries" rows="5" placeholder="mot 1&#10;mot 2"></textarea>
+                </div>
+
+                <div id="errorMsg" class="error-msg hidden"></div>
+
+                <div class="modal-actions">
+                    <button id="cancelEdit" class="btn btn-secondary">Annuler</button>
+                    <button id="saveEdit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="popup.js"></script>
+    </body>
+</html>

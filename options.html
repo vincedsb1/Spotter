@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Options - Surligneur</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body class="options-body">
+        <div class="container">
+            <header>
+                <h1>Gestion des Listes</h1>
+            </header>
+
+                        <div class="global-options card">
+                            <h3>Options Globales</h3>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="globalVariations" />
+                                Gérer les variations (singulier/pluriel, genre basique)
+                            </label>
+                            <br>
+                            <label class="checkbox-label" style="margin-top: 10px; display: block;">
+                                <input type="checkbox" id="showFloatingButton" />
+                                Afficher le bouton flottant sur les pages
+                            </label>
+                        </div>
+            <div class="lists-section">
+                <div id="listsContainer"></div>
+                <button id="addListBtn" class="btn btn-primary full-width">
+                    + Ajouter une liste
+                </button>
+            </div>
+        </div>
+
+        <!-- Template pour modal ou edition inline -->
+        <div id="editModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Éditer la liste</h2>
+                <div class="form-group">
+                    <label>Nom de la liste</label>
+                    <input type="text" id="editName" />
+                </div>
+                <div class="form-group">
+                    <label>Couleur</label>
+                    <input type="color" id="editColor" />
+                </div>
+                <div class="form-group">
+                    <label>Contenu (1 par ligne)</label>
+                    <textarea
+                        id="editEntries"
+                        rows="10"
+                        placeholder="Mot 1&#10;Expression 2"
+                    ></textarea>
+                    <small
+                        >Les doublons avec d'autres listes sont
+                        interdits.</small
+                    >
+                </div>
+                <div id="errorMsg" class="error-msg hidden"></div>
+                <div class="modal-actions">
+                    <button id="cancelEdit" class="btn btn-secondary">
+                        Annuler
+                    </button>
+                    <button id="saveEdit" class="btn btn-primary">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="options.js"></script>
+    </body>
+</html>
