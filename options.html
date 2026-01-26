@@ -4,30 +4,184 @@
         <meta charset="UTF-8" />
         <title>Options - Surligneur</title>
         <link rel="stylesheet" href="styles.css" />
+        <!-- Material Icons -->
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     </head>
     <body class="options-body">
         <div class="container">
             <header>
-                <h1>Gestion des Listes</h1>
+                <h1>Configuration Spotter</h1>
             </header>
 
-                        <div class="global-options card">
-                            <h3>Options Globales</h3>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="globalVariations" />
-                                Gérer les variations (singulier/pluriel, genre basique)
-                            </label>
-                            <br>
-                            <label class="checkbox-label" style="margin-top: 10px; display: block;">
-                                <input type="checkbox" id="showFloatingButton" />
-                                Afficher le bouton flottant sur les pages
-                            </label>
+            <div class="tabs-nav">
+                <button class="tab-btn active" data-tab="tab-lists">Gestion des listes</button>
+                <button class="tab-btn" data-tab="tab-forms">Gestion des formulaires</button>
+                <button class="tab-btn" data-tab="tab-ia">I.A.</button>
+                <button class="tab-btn" data-tab="tab-settings">Paramètres</button>
+            </div>
+
+            <div id="tab-lists" class="tab-content active">
+                <div class="lists-section">
+                    <div id="listsContainer"></div>
+                    <button id="addListBtn" class="btn btn-primary full-width">
+                        + Ajouter une liste
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB IA -->
+            <div id="tab-ia" class="tab-content">
+                <div class="card">
+                    <h3>Configuration OpenAI</h3>
+                    <p class="description">
+                        Configurez votre accès à l'intelligence artificielle et gérez vos prompts.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="aiApiKey">Clé API OpenAI (sk-...)</label>
+                        <input type="password" id="aiApiKey" placeholder="sk-..." />
+                    </div>
+
+                    <div class="hierarchy-bar category-bar" style="margin: 20px 0 10px 0;">
+                        <div class="nav-controls">
+                            <button id="promptPrevBtn" class="btn-nav">
+                                <span class="material-icons">chevron_left</span>
+                            </button>
+                            <div class="nav-input-wrapper">
+                                <span class="input-label">Nom du Prompt</span>
+                                <input type="text" id="promptNameInput" class="nav-input" placeholder="Nom du prompt" />
+                            </div>
+                            <button id="promptNextBtn" class="btn-nav">
+                                <span class="material-icons">chevron_right</span>
+                            </button>
                         </div>
-            <div class="lists-section">
-                <div id="listsContainer"></div>
-                <button id="addListBtn" class="btn btn-primary full-width">
-                    + Ajouter une liste
-                </button>
+                        <div class="nav-actions">
+                            <button id="addPromptBtn" class="btn-action primary" title="Nouveau prompt">
+                                <span class="material-icons">add</span>
+                            </button>
+                            <button id="deletePromptBtn" class="btn-action danger" title="Supprimer ce prompt">
+                                <span class="material-icons">delete_outline</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aiSystemPrompt">Contenu du Prompt</label>
+                        <textarea id="aiSystemPrompt" rows="8" placeholder="Ex: Tu es un expert en correction orthographique. Corrige ce texte :"></textarea>
+                    </div>
+
+                    <button id="saveAiSettingsBtn" class="btn btn-primary full-width">
+                        Enregistrer la configuration IA
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-forms" class="tab-content">
+                
+                <div class="hierarchy-container">
+                    
+                    <!-- 1. Category Navigator -->
+                    <div class="hierarchy-bar category-bar">
+                        <div class="nav-controls">
+                            <button id="catPrevBtn" class="btn-nav">
+                                <span class="material-icons">chevron_left</span>
+                            </button>
+                            <div class="nav-input-wrapper">
+                                <span class="input-label">Catégorie</span>
+                                <input type="text" id="categoryNameInput" class="nav-input" placeholder="Nom de la catégorie" />
+                            </div>
+                            <button id="catNextBtn" class="btn-nav">
+                                <span class="material-icons">chevron_right</span>
+                            </button>
+                        </div>
+                        <div class="nav-actions">
+                            <button id="addCategoryBtn" class="btn-action primary" title="Nouvelle catégorie">
+                                <span class="material-icons">add</span>
+                            </button>
+                            <button id="deleteCategoryBtn" class="btn-action danger" title="Supprimer catégorie">
+                                <span class="material-icons">delete_outline</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Form (Group) Navigator -->
+                    <div class="hierarchy-bar group-bar">
+                        <div class="nav-controls">
+                            <button id="groupPrevBtn" class="btn-nav">
+                                <span class="material-icons">chevron_left</span>
+                            </button>
+                            <div class="nav-input-wrapper">
+                                <span class="input-label">Formulaire</span>
+                                <input type="text" id="groupNameInput" class="nav-input" placeholder="Nom du formulaire" />
+                            </div>
+                            <button id="groupNextBtn" class="btn-nav">
+                                <span class="material-icons">chevron_right</span>
+                            </button>
+                        </div>
+                        <div class="nav-actions">
+                            <button id="addGroupBtn" class="btn-action primary" title="Nouveau formulaire">
+                                <span class="material-icons">add</span>
+                            </button>
+                            <button id="deleteGroupBtn" class="btn-action danger" title="Supprimer formulaire">
+                                <span class="material-icons">delete_outline</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 3. Fields Manager -->
+                <div class="card fields-card">
+                    <div class="fields-header">
+                        <h3>Champs configurés</h3>
+                        <span id="fields-count" class="badge">0</span>
+                    </div>
+                    <div id="formsContainer" class="forms-container"></div>
+                    
+                    <div class="field-actions-row" style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button id="addInputBtn" class="btn btn-primary" style="flex: 1;">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 5px; vertical-align: middle;">text_fields</span>
+                            Ajouter un input
+                        </button>
+                        <button id="addSeparatorBtn" class="btn btn-secondary" style="flex: 1;">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 5px; vertical-align: middle;">horizontal_rule</span>
+                            Ajouter un séparateur
+                        </button>
+                        <button id="addTextareaBtn" class="btn btn-primary" style="flex: 1;">
+                            <span class="material-icons" style="font-size: 18px; margin-right: 5px; vertical-align: middle;">notes</span>
+                            Ajouter un textarea
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="tab-content">
+                <div class="card">
+                    <h3>Comportement</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="globalVariations" />
+                        Gérer les variations (singulier/pluriel, genre basique)
+                    </label>
+                    <br>
+                    <label class="checkbox-label" style="margin-top: 10px; display: block;">
+                        <input type="checkbox" id="showFloatingButton" />
+                        Afficher le bouton flottant sur les pages
+                    </label>
+                </div>
+
+                <div class="card">
+                    <h3>Sauvegarde & Restauration</h3>
+                    <p class="description">Exportez toutes vos données (listes et formulaires) dans un fichier JSON pour les sauvegarder ou les transférer.</p>
+                    <div class="actions-group" style="justify-content: flex-start; gap: 15px;">
+                        <button id="exportBtn" class="btn btn-secondary">
+                            ⬇️ Exporter les données
+                        </button>
+                        <button id="importBtn" class="btn btn-secondary">
+                            ⬆️ Importer les données
+                        </button>
+                        <input type="file" id="importInput" accept=".json" style="display:none" />
+                    </div>
+                </div>
             </div>
         </div>
 

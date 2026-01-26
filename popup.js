@@ -1,11 +1,25 @@
 // popup.js
 
-// Constants
+// 32 Tailwind CSS Pastel Colors (Shades 200 & 300)
 const COLORS = [
-  "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e",
-  "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1",
-  "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#fb7185",
-  "#9ca3af", "#6b7280", "#4b5563", "#374151", "#1f2937", "#000000"
+  "#fecaca", "#fca5a5", // Red
+  "#fed7aa", "#fdba74", // Orange
+  "#fde68a", "#fcd34d", // Amber
+  "#fef08a", "#fde047", // Yellow
+  "#d9f99d", "#bef264", // Lime
+  "#bbf7d0", "#86efac", // Green
+  "#a7f3d0", "#6ee7b7", // Emerald
+  "#99f6e4", "#5eead4", // Teal
+  "#a5f3fc", "#67e8f9", // Cyan
+  "#bae6fd", "#7dd3fc", // Sky
+  "#bfdbfe", "#93c5fd", // Blue
+  "#c7d2fe", "#a5b4fc", // Indigo
+  "#ddd6fe", "#c4b5fd", // Violet
+  "#e9d5ff", "#d8b4fe", // Purple
+  "#f0abfc", "#e879f9", // Fuchsia
+  "#fbcfe8", "#f9a8d4", // Pink
+  "#fda4af", "#fb7185", // Rose
+  "#e2e8f0", "#cbd5e1"  // Slate
 ];
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -31,9 +45,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // --- Initialization ---
   
+  await loadState();
   await loadLists();
   initColorGrid();
-  checkActiveTab();
 
   // --- Event Listeners ---
 
@@ -61,8 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     editColorInput.value = color;
     // Update visual selection
     Array.from(colorGrid.children).forEach(child => {
-      // Use includes to handle rgb vs hex discrepancies
-      if (child.style.backgroundColor.includes(hexToRgb(color)) || child.style.backgroundColor === color) {
+      if (child.style.backgroundColor === color || rgbToHex(child.style.backgroundColor) === color) {
         child.classList.add("selected");
       } else {
         child.classList.remove("selected");
@@ -70,12 +83,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
   
-  function hexToRgb(hex) {
-    const bigint = parseInt(hex.slice(1), 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return r + ", " + g + ", " + b; // standard CSS format is "rgb(r, g, b)"
+  // Helper to compare computed styles if needed (browsers return rgb)
+  function rgbToHex(rgb) {
+    if (rgb.startsWith("#")) return rgb;
+    const sep = rgb.indexOf(",") > -1 ? "," : " ";
+    const rgbVal = rgb.substr(4).split(")")[0].split(sep);
+    let r = (+rgbVal[0]).toString(16),
+        g = (+rgbVal[1]).toString(16),
+        b = (+rgbVal[2]).toString(16);
+    if (r.length == 1) r = "0" + r;
+    if (g.length == 1) g = "0" + g;
+    if (b.length == 1) b = "0" + b;
+    return "#" + r + g + b;
+  }
+
+  async function loadState() {
+    const data = await chrome.storage.local.get("extensionEnabled");
+    setToggleUI(!!data.extensionEnabled);
   }
 
   async function loadLists() {
@@ -188,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     await chrome.storage.local.set({ lists: allLists });
-    notifyContentScript();
+    notifyContentScript(); // Still useful to trigger instant refresh of lists
     closeModal();
     renderLists();
   }
@@ -208,6 +232,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function notifyContentScript() {
+    // We keep this to refresh LISTS content immediately
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0] && tabs[0].id) {
         chrome.tabs.sendMessage(tabs[0].id, { action: "refresh" }).catch(() => {});
@@ -215,28 +240,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  async function checkActiveTab() {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.id || !tab.url || tab.url.startsWith("chrome://")) {
-        toggleBtn.disabled = true;
-        toggleBtn.textContent = "Non disponible";
-        return;
-    }
-    chrome.tabs.sendMessage(tab.id, { action: "getState" }, (response) => {
-        if (!chrome.runtime.lastError) {
-            setToggleUI(response && response.isActive);
-        }
-    });
-  }
-
   async function toggleGlobalState() {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab && tab.id) {
-        chrome.tabs.sendMessage(tab.id, { action: "toggle" }, (res) => {
-            const isNowActive = !toggleBtn.classList.contains("active");
-            setToggleUI(isNowActive);
-        });
-    }
+    const data = await chrome.storage.local.get("extensionEnabled");
+    const newState = !data.extensionEnabled;
+    
+    // Save to storage -> triggers onChanged in content.js -> toggles UI
+    await chrome.storage.local.set({ extensionEnabled: newState });
+    setToggleUI(newState);
   }
 
   function setToggleUI(isActive) {

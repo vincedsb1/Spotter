@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Spotter",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Surligne automatiquement des listes de mots définis (Green/Red flags).",
   "permissions": [
     "storage",
