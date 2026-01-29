@@ -1,49 +1,67 @@
-
 <div align="center">
-  <img src="icons/web-app-manifest-512x512.png" alt="Spotter Logo" width="128" height="128">
-  <h1>Spotter</h1>
-  <p><strong>Votre assistant de surlignage intelligent pour le web.</strong></p>
+  <img src="spotter_cover.png" alt="Spotter Cover Image">
+  <h3>Spotter: Your Smart Highlighting Assistant for the Web</h3>
+  <p>A discreet but powerful browser extension to automatically highlight custom keyword lists on any webpage, helping you spot what matters most.</p>
 </div>
 
----
+<div align="center">
+  <img src="Spotter_screenshot.jpg" alt="Spotter Interface Screenshot" width="600">
+</div>
 
-**Spotter** est une extension Chrome puissante et discrète conçue pour vous aider à repérer instantanément les informations importantes sur n'importe quelle page web. Que vous cherchiez des "Green Flags" dans une offre d'emploi, des termes techniques spécifiques, ou que vous vouliez éviter certains contenus, Spotter les met en lumière pour vous.
+## ✨ Core Features
 
-## ✨ Fonctionnalités Clés
+- **Custom Highlighting**: Define multiple keyword lists and Spotter will automatically highlight them across any website you visit.
+- **Color-Coded Lists**: Assign a unique color to each list for quick and intuitive visual identification of different term categories.
+- **Dynamic Content Support**: Works seamlessly on modern Single-Page Applications (SPAs) by using a `MutationObserver` to detect and highlight content that changes without a page reload.
+- **Quick-Add Context Menu**: Instantly add any selected text to one of your lists with a simple right-click, streamlining your workflow.
+- **Smart & Precise Matching**: Features case/accent-insensitivity and strict word boundary matching via `TreeWalker` API to ensure accuracy and prevent partial matches (e.g., highlights "Go", but not in "MongoDb").
+- **Floating UI Access**: A discreet floating button provides quick access to controls without needing to navigate to the extension toolbar.
 
-*   **🔍 Surlignage Automatique :** Définissez vos listes de mots-clés et Spotter les surligne automatiquement dès qu'ils apparaissent sur une page.
-*   **🎨 Listes Personnalisables :** Créez autant de listes que vous le souhaitez (ex: "Compétences", "À éviter", "Urgent"). Assignez une couleur unique à chaque liste parmi une palette de 24 couleurs vibrantes.
-*   **🖱️ Bouton Flottant (FAB) :** Un bouton discret et élégant s'intègre à votre navigation pour un accès rapide aux contrôles sans avoir à chercher l'icône de l'extension.
-*   **⚡ Menu Contextuel Rapide :** Sélectionnez n'importe quel texte, faites un clic droit et ajoutez-le instantanément à l'une de vos listes existantes.
-*   **🔄 Support SPA & Dynamique :** Fonctionne parfaitement sur les sites modernes (Gmail, LinkedIn, Facebook) en détectant les changements de contenu sans recharger la page.
-*   **🧠 Matching Intelligent :**
-    *   **Insensible à la casse et aux accents :** "café", "CAFE", et "Cafe" sont tous détectés.
-    *   **Limites de mots strictes :** "Go" est surligné dans "Go/JS", mais pas dans "MongoDb".
-    *   **Variations (Optionnel) :** Peut détecter automatiquement les pluriels simples.
-*   **⌨️ Raccourcis Clavier :** Activez ou désactivez le surlignage en une fraction de seconde (Défaut: `Ctrl+Shift+H` ou `Cmd+Shift+H`).
+## 🛠️ Tech Stack
 
-## 🚀 Installation
+- **Language**: [JavaScript (ES6)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+- **Platform**: [Chrome Extension (Manifest V3)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+- **Core APIs**: [Chrome Storage API](https://developer.chrome.com/docs/extensions/reference/storage/), [Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM), [TreeWalker API](https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker)
+- **Styling**: [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
-1.  Clonez ce dépôt ou téléchargez les fichiers.
-2.  Ouvrez Chrome et allez sur `chrome://extensions/`.
-3.  Activez le **Mode développeur** (en haut à droite).
-4.  Cliquez sur **Charger l'extension non empaquetée**.
-5.  Sélectionnez le dossier contenant les fichiers de Spotter.
+## 🚀 Getting Started
 
-## 📖 Utilisation
+This project is a browser extension and does not require a build process.
 
-1.  **Créer une liste :** Cliquez sur l'extension ou le bouton flottant, puis sur "Éditer les listes" (ou le crayon) pour créer votre première liste (ex: "Mots positifs", couleur verte).
-2.  **Naviguer :** Allez sur n'importe quel site web. Les mots de votre liste apparaîtront surlignés.
-3.  **Ajouter à la volée :** Sélectionnez un mot intéressant sur une page -> Clic Droit -> "Ajouter à Spotter" -> Choisissez votre liste.
-4.  **Contrôle total :** Utilisez le switch dans le menu pour activer/désactiver une liste spécifique ou l'extension entière.
+### Prerequisites
 
-## 🛠️ Technologies
+You need a Chromium-based browser to run this extension.
+- [Google Chrome](https://www.google.com/chrome/)
+- [Brave](https://brave.com/)
+- [Microsoft Edge](https://www.microsoft.com/en-us/edge)
 
-*   **Manifest V3 :** Conforme aux dernières normes de sécurité et de performance de Chrome.
-*   **Shadow DOM :** L'interface (bouton flottant) est isolée du style de la page visitée pour éviter tout conflit visuel.
-*   **MutationObserver :** Pour une réactivité parfaite sur les applications web dynamiques.
-*   **TreeWalker API :** Pour un traitement du texte efficace et performant sans perturber le DOM.
+### 1. Installation
 
-## 📝 License
+To install the extension locally for development:
 
-Distribué sous licence MIT. Voir `LICENSE` pour plus d'informations.
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/spotter.git
+
+# 2. Navigate to your browser's extension management page
+# For Chrome/Brave: chrome://extensions
+# For Edge: edge://extensions
+
+# 3. Enable "Developer mode" (usually a toggle in the top-right corner).
+
+# 4. Click "Load unpacked" and select the cloned `spotter` directory.
+```
+
+### 2. Environment Variables
+
+This project does not require any environment variables. All user-defined lists and settings are stored locally using the [Chrome Storage API](https://developer.chrome.com/docs/extensions/reference/storage/).
+
+### 3. Run the Development Server
+
+There is no development server to run. Once the extension is loaded as "unpacked," it is active.
+
+To see your code changes, you must reload the extension from the browser's extension management page (`chrome://extensions/`).
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
