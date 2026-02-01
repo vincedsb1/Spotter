@@ -45,7 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const addPromptBtn = document.getElementById("addPromptBtn");
   const deletePromptBtn = document.getElementById("deletePromptBtn");
   const promptNameInput = document.getElementById("promptNameInput");
+  const promptModelSelect = document.getElementById("promptModelSelect");
   const aiSystemPrompt = document.getElementById("aiSystemPrompt"); // Content textarea
+  const aiVariablesContainer = document.getElementById("aiVariablesContainer");
+  const addVariableBtn = document.getElementById("addVariableBtn");
 
   // --- Settings ---
   const globalVariations = document.getElementById("globalVariations");
@@ -129,15 +132,22 @@ document.addEventListener("DOMContentLoaded", () => {
               aiSettings.prompts = [{
                   id: crypto.randomUUID(),
                   name: "Défaut",
-                  content: aiSettings.systemPrompt || ""
+                  content: aiSettings.systemPrompt || "",
+                  model: "gpt-3.5-turbo",
+                  variables: []
               }];
               delete aiSettings.systemPrompt; // Cleanup old key if you want, or just ignore
+          } else {
+              // Ensure variables exist on all prompts
+              aiSettings.prompts.forEach(p => {
+                  if (!p.variables) p.variables = [];
+              });
           }
       } else {
           // Fresh start
           aiSettings = {
               apiKey: "",
-              prompts: [{ id: crypto.randomUUID(), name: "Défaut", content: "" }]
+              prompts: [{ id: crypto.randomUUID(), name: "Défaut", content: "", model: "gpt-3.5-turbo", variables: [] }]
           };
       }
 
@@ -168,7 +178,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // UI Update
       promptNameInput.value = activePrompt.name;
+      promptModelSelect.value = activePrompt.model || "gpt-3.5-turbo"; // Default fallback
       aiSystemPrompt.value = activePrompt.content;
+      
+      renderVariablesUI(activePrompt.variables || []);
 
       // Nav Buttons
       const multi = aiSettings.prompts.length > 1;
@@ -199,7 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
           const newPrompt = {
               id: crypto.randomUUID(),
               name: name,
-              content: ""
+              content: "",
+              model: "gpt-3.5-turbo"
           };
           aiSettings.prompts.push(newPrompt);
           activePromptId = newPrompt.id;
@@ -228,9 +242,164 @@ document.addEventListener("DOMContentLoaded", () => {
       if(p) p.name = e.target.value;
   });
 
+  promptModelSelect.addEventListener("change", (e) => {
+      const p = aiSettings.prompts.find(p => p.id === activePromptId);
+      if(p) p.model = e.target.value;
+  });
+
   aiSystemPrompt.addEventListener("change", (e) => {
       const p = aiSettings.prompts.find(p => p.id === activePromptId);
       if(p) p.content = e.target.value;
+  });
+
+  // --- Variable Management ---
+
+  function syncVariablesState() {
+      const p = aiSettings.prompts.find(p => p.id === activePromptId);
+      if (!p) return;
+
+      const varCards = aiVariablesContainer.querySelectorAll(".variable-card");
+      p.variables = Array.from(varCards).map(card => {
+          const name = card.querySelector(".var-name-input").value;
+          const optsInputs = card.querySelectorAll(".opt-value-input");
+          const options = Array.from(optsInputs).map(input => ({
+              label: input.value, // Use value as label too
+              value: input.value
+          }));
+          return { name, options };
+      });
+  }
+  
+  function renderVariablesUI(variables) {
+      aiVariablesContainer.innerHTML = "";
+      variables.forEach((v, vIndex) => {
+          const card = document.createElement("div");
+          card.className = "variable-card";
+          card.style.background = "#fff";
+          card.style.border = "1px solid #e2e8f0";
+          card.style.borderRadius = "8px";
+          card.style.padding = "16px";
+          card.style.marginBottom = "16px";
+          card.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+          
+          // Header: Name + Delete
+          const header = document.createElement("div");
+          header.style.display = "flex";
+          header.style.justifyContent = "space-between";
+          header.style.alignItems = "center";
+          header.style.marginBottom = "12px";
+          header.style.gap = "10px";
+          
+          const nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.placeholder = "Nom du sélecteur (ex: Langue)";
+          nameInput.value = v.name || "";
+          nameInput.className = "nav-input var-name-input";
+          nameInput.style.fontWeight = "600";
+          nameInput.style.flex = "1";
+          
+          const delBtn = document.createElement("button");
+          delBtn.className = "btn-icon danger"; // Using existing class or style
+          delBtn.innerHTML = '<span class="material-icons">delete</span>';
+          delBtn.title = "Supprimer ce sélecteur";
+          delBtn.style.color = "#ef4444";
+          delBtn.style.background = "none";
+          delBtn.style.border = "none";
+          delBtn.style.cursor = "pointer";
+          delBtn.onclick = () => {
+              if(!confirm("Supprimer ce sélecteur ?")) return;
+              syncVariablesState(); // Save others
+              const p = aiSettings.prompts.find(p => p.id === activePromptId);
+              if(p) {
+                  p.variables.splice(vIndex, 1);
+                  renderVariablesUI(p.variables);
+              }
+          };
+          
+          header.append(nameInput, delBtn);
+          
+          // Options List
+          const optionsContainer = document.createElement("div");
+          optionsContainer.className = "options-container";
+          optionsContainer.style.display = "flex";
+          optionsContainer.style.flexDirection = "column";
+          optionsContainer.style.gap = "8px";
+          
+          (v.options || []).forEach((opt, oIndex) => {
+              const row = document.createElement("div");
+              row.style.display = "flex";
+              row.style.alignItems = "center";
+              row.style.gap = "8px";
+              
+              const bullet = document.createElement("span");
+              bullet.className = "material-icons";
+              bullet.textContent = "subdirectory_arrow_right";
+              bullet.style.fontSize = "16px";
+              bullet.style.color = "#cbd5e1";
+
+              const valIn = document.createElement("input");
+              valIn.placeholder = "Option (ex: Anglais)";
+              valIn.value = opt.value || ""; // Use value (we treat label=value)
+              valIn.className = "opt-value-input";
+              valIn.style.flex = "1";
+              valIn.style.padding = "8px";
+              valIn.style.border = "1px solid #cbd5e1";
+              valIn.style.borderRadius = "6px";
+              valIn.style.fontSize = "13px";
+              
+              const delOpt = document.createElement("button");
+              delOpt.innerHTML = '<span class="material-icons">close</span>';
+              delOpt.style.color = "#94a3b8";
+              delOpt.style.background = "none";
+              delOpt.style.border = "none";
+              delOpt.style.cursor = "pointer";
+              delOpt.onclick = () => {
+                   syncVariablesState();
+                   const p = aiSettings.prompts.find(p => p.id === activePromptId);
+                   if(p && p.variables[vIndex]) {
+                       p.variables[vIndex].options.splice(oIndex, 1);
+                       renderVariablesUI(p.variables);
+                   }
+              };
+              
+              row.append(bullet, valIn, delOpt);
+              optionsContainer.appendChild(row);
+          });
+          
+          const addOptBtn = document.createElement("button");
+          addOptBtn.className = "btn-text";
+          addOptBtn.textContent = "+ Ajouter une option";
+          addOptBtn.style.marginTop = "8px";
+          addOptBtn.style.color = "#3b82f6";
+          addOptBtn.style.background = "none";
+          addOptBtn.style.border = "none";
+          addOptBtn.style.fontSize = "13px";
+          addOptBtn.style.fontWeight = "600";
+          addOptBtn.style.cursor = "pointer";
+          addOptBtn.style.padding = "4px 0";
+          addOptBtn.onclick = () => {
+              syncVariablesState();
+              const p = aiSettings.prompts.find(p => p.id === activePromptId);
+              if(p && p.variables[vIndex]) {
+                  if(!p.variables[vIndex].options) p.variables[vIndex].options = [];
+                  p.variables[vIndex].options.push({label:"", value:""});
+                  renderVariablesUI(p.variables);
+              }
+          };
+          
+          card.append(header, optionsContainer, addOptBtn);
+          aiVariablesContainer.appendChild(card);
+      });
+  }
+
+  addVariableBtn.addEventListener("click", () => {
+      syncVariablesState();
+      const p = aiSettings.prompts.find(p => p.id === activePromptId);
+      if(p) {
+          if(!p.variables) p.variables = [];
+          p.variables.push({name: "", options: [{label:"", value:""}]});
+          renderVariablesUI(p.variables);
+      }
   });
 
   function saveAiData() {
@@ -249,6 +418,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if(p) {
           p.name = promptNameInput.value;
           p.content = aiSystemPrompt.value;
+          p.model = promptModelSelect.value;
+          
+          // Scrape Variables from DOM (Final sync)
+          syncVariablesState();
       }
 
       chrome.storage.local.set({ aiSettings: aiSettings }, () => {

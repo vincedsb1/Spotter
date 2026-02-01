@@ -51,6 +51,14 @@
                                 <span class="input-label">Nom du Prompt</span>
                                 <input type="text" id="promptNameInput" class="nav-input" placeholder="Nom du prompt" />
                             </div>
+                            <div class="nav-input-wrapper" style="margin-left: 10px; width: 120px;">
+                                <span class="input-label">Modèle</span>
+                                <select id="promptModelSelect" class="nav-input">
+                                    <option value="gpt-4o-mini">GPT-5 nano</option>
+                                    <option value="gpt-4o">GPT-5 mini</option>
+                                    <option value="gpt-4-turbo">GPT-5</option>
+                                </select>
+                            </div>
                             <button id="promptNextBtn" class="btn-nav">
                                 <span class="material-icons">chevron_right</span>
                             </button>
@@ -68,6 +76,16 @@
                     <div class="form-group">
                         <label for="aiSystemPrompt">Contenu du Prompt</label>
                         <textarea id="aiSystemPrompt" rows="8" placeholder="Ex: Tu es un expert en correction orthographique. Corrige ce texte :"></textarea>
+                    </div>
+
+                    <!-- Variables Dynamiques -->
+                    <div class="variables-manager" style="margin-bottom: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #475569;">Variables Dynamiques (Selects)</h4>
+                        <div id="aiVariablesContainer"></div>
+                        <button id="addVariableBtn" class="btn btn-secondary btn-sm" style="margin-top: 10px;">
+                            <span class="material-icons" style="font-size: 16px; vertical-align: middle;">add</span>
+                            Ajouter un menu déroulant
+                        </button>
                     </div>
 
                     <button id="saveAiSettingsBtn" class="btn btn-primary full-width">

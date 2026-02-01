@@ -53,11 +53,20 @@ class SpotterUI {
 
     const style = `
       <style>
-        :host { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-sizing: border-box; line-height: 1.5; font-size: 14px; }
+        :host { 
+            font-family: sans-serif; /* Simplest font stack */
+            box-sizing: border-box; 
+            line-height: 1.5; 
+            font-size: 14px;
+            z-index: 2147483647;
+            position: fixed; /* Ensure host itself is fixed */
+            top: 0; left: 0; width: 100%; height: 100%; /* Full screen overlay */
+            pointer-events: none; /* Let clicks pass through */
+        }
         * { box-sizing: border-box; }
         
         /* FAB */
-        .fab { position: absolute; top: 0; right: 0; width: 48px; height: 48px; background: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, border-color 0.2s; border: 2px solid transparent; overflow: hidden; user-select: none; z-index: 1000; }
+        .fab { position: absolute; top: 20px; right: 20px; width: 48px; height: 48px; background: white; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, border-color 0.2s; border: 2px solid transparent; overflow: hidden; user-select: none; z-index: 1000; pointer-events: auto; }
         .fab:hover { transform: scale(1.05); }
         .fab.active { border-color: #22c55e; }
         .fab.inactive { border-color: #cbd5e1; filter: grayscale(100%); }
@@ -69,17 +78,18 @@ class SpotterUI {
         /* Menu Container */
         .menu { 
             position: absolute; 
-            top: 60px; 
-            right: 0; 
+            top: 80px; /* Below FAB */
+            right: 20px; /* Aligned with FAB */
             width: 400px; 
             background: white; 
             border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); /* Stronger shadow */
             display: none; 
             flex-direction: column; 
             overflow: hidden; 
-            z-index: 999; 
+            z-index: 2147483647; /* Max Z-Index */
             border: 1px solid #e2e8f0;
+            pointer-events: auto;
             
             /* Dynamic Height Logic */
             height: auto;
@@ -119,6 +129,7 @@ class SpotterUI {
             flex-direction: column;
         }
         .tab-content.active { display: flex !important; }
+        #tab-content-ai { overflow: hidden; } /* Prevent tab from scrolling, let ai-output handle it */
 
         /* --- Controls & Forms Styles (Condensed for brevity) --- */
         .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 8px; font-weight: 700; flex-shrink: 0; }
@@ -127,9 +138,9 @@ class SpotterUI {
         .btn-off { background: #ef4444; color: white; } .btn-off:hover { background: #dc2626; }
         .lists-container { display: flex; flex-direction: column; gap: 4px; flex-grow: 1; }
         .list-row { display: flex; align-items: center; padding: 8px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9; }
-        .color-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; border: 1px solid rgba(0,0,0,0.1); }
-        .list-name { flex: 1; font-size: 14px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .switch { position: relative; display: inline-block; width: 36px; height: 20px; } .switch input { opacity: 0; width: 0; height: 0; }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
+        .list-name { flex: 1; font-family: system-ui, sans-serif !important; font-size: 14px; line-height: 1.5 !important; font-weight: 500; color: #334155 !important; min-width: 50px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; } .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         input:checked + .slider { background-color: #3b82f6; } input:checked + .slider:before { transform: translateX(16px); }
@@ -138,43 +149,56 @@ class SpotterUI {
         .nav-row.category-row { background: #e2e8f0; color: #334155; } .nav-row.group-row { background: #f1f5f9; color: #475569; }
         .nav-btn { background: none; border: none; cursor: pointer; padding: 2px; color: inherit; display: flex; align-items: center; justify-content: center; opacity: 0.7; }
         .nav-btn:hover { opacity: 1; } .nav-btn:disabled { opacity: 0.3; cursor: default; }
-        .nav-title { font-weight: 600; font-size: 12px; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
+        .nav-title { font-family: system-ui, sans-serif !important; font-weight: 600; font-size: 12px; line-height: 1.5 !important; text-align: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; color: #0f172a !important; }
         .forms-container { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
         .form-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; transition: border-color 0.2s; }
         .form-item:hover { border-color: #cbd5e1; }
         .form-item.separator-item { background: transparent; border: none; padding: 5px 0; justify-content: center; flex-shrink: 0; }
         .form-item.separator-item .separator-line { height: 1px; background: #e2e8f0; width: 100%; }
-        .form-info { flex: 1; overflow: hidden; margin-right: 12px; min-width: 0; }
-        .form-label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .form-value { display: block; font-size: 14px; color: #1e293b; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .form-info { flex: 1; display: flex; flex-direction: column; justify-content: center; overflow: hidden; margin-right: 12px; min-width: 0; }
+        .form-label { display: block; font-family: system-ui, sans-serif !important; font-size: 11px; line-height: 1.4 !important; font-weight: 700; color: #64748b !important; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .form-value { display: block; font-family: monospace, system-ui !important; font-size: 14px; line-height: 1.5 !important; color: #1e293b !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .copy-btn { background: white; border: 1px solid #cbd5e1; border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; transition: all 0.2s; flex-shrink: 0; }
         .copy-btn:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
         .copy-success { color: #22c55e !important; border-color: #22c55e !important; background: #f0fdf4 !important; }
 
         /* --- AI Tab Styles --- */
-        .ai-container { display: flex; flex-direction: column; gap: 12px; flex-grow: 1; min-height: 0; }
+        .ai-container { display: flex; flex-direction: column; gap: 12px; flex-grow: 1; min-height: 0; font-family: system-ui, -apple-system, sans-serif !important; }
         
         .ai-input, .ai-output { 
             width: 100%; 
             padding: 10px; 
             border: 1px solid #cbd5e1; 
             border-radius: 8px; 
-            font-family: inherit; 
+            font-family: system-ui, -apple-system, sans-serif !important; 
             font-size: 14px; 
+            line-height: 1.5;
             resize: none; 
             box-sizing: border-box; 
+            color: #1e293b !important;
+        }
+
+        .ai-input::placeholder, .ai-output::placeholder {
+            color: #94a3b8 !important;
+            font-family: system-ui, -apple-system, sans-serif !important;
+            opacity: 1;
         }
         
-        .ai-input { height: 80px; flex-shrink: 0; }
-        .ai-input:focus { height: 100px; }
+        .ai-input { height: 150px; flex-shrink: 0; }
+        /* Removed focus jump */
         
-        /* Removed flex-grow:1 to prevent empty taking space. Use min-height only. */
+        /* Use flex-grow: 1 and overflow-y: auto to allow scrolling within the response */
         .ai-output { 
             background: #f8fafc; 
-            color: #334155; 
-            min-height: 60px; /* Small default */
-            height: auto;
-            overflow-y: hidden; /* Hide scroll until max-height logic kicks in via container */
+            color: #334155 !important; 
+            min-height: 100px; 
+            height: 0; /* Important for flex-grow to control height */
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .ai-var-select {
+            font-family: system-ui, -apple-system, sans-serif !important;
         }
         
         .ai-btn { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; flex-shrink: 0; }
@@ -260,6 +284,8 @@ class SpotterUI {
                 <div class="section-title">Entrée</div>
                 <textarea id="ai-input" class="ai-input" placeholder="Entrez vos données ici..."></textarea>
                 
+                <div id="ai-variables" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
+
                 <button id="ai-generate-btn" class="ai-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>
                     Générer
@@ -325,7 +351,24 @@ class SpotterUI {
         const text = aiInput.value.trim();
         if(!text) return;
         const currentPrompt = this.aiPrompts[this.activePromptIndex];
-        const promptContent = currentPrompt ? currentPrompt.content : "";
+        let promptContent = currentPrompt ? currentPrompt.content : "";
+        const promptModel = currentPrompt ? currentPrompt.model : null;
+        
+        // Append Variables Context
+        const varsContainer = this.shadowRoot.getElementById("ai-variables");
+        const selects = varsContainer.querySelectorAll("select");
+        if(selects.length > 0) {
+            let contextStr = "\n\n[Contexte & Configuration]:\n";
+            selects.forEach(sel => {
+                const varName = sel.getAttribute("data-var-name");
+                const val = sel.value;
+                if(val) {
+                    contextStr += `- ${varName}: ${val}\n`;
+                }
+            });
+            promptContent += contextStr;
+        }
+
         aiBtn.disabled = true;
         aiBtn.innerHTML = "Génération...";
         aiStatus.textContent = "";
@@ -334,7 +377,7 @@ class SpotterUI {
         aiOutput.value = "";
         aiOutput.style.height = "60px";
 
-        chrome.runtime.sendMessage({ action: "askAI", text: text, promptContent: promptContent }, (response) => {
+        chrome.runtime.sendMessage({ action: "askAI", text: text, promptContent: promptContent, model: promptModel }, (response) => {
             aiBtn.disabled = false;
             aiBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg> Générer`;
             if (chrome.runtime.lastError) { aiStatus.textContent = "Erreur extension."; return; }
@@ -407,15 +450,10 @@ class SpotterUI {
   createHost(position) {
     const host = document.createElement("div");
     host.id = "spotter-ui-host";
-    let top = 20; let right = 20;
-    if (position) {
-      if (typeof position.top === 'number' && !isNaN(position.top)) top = position.top;
-      if (typeof position.right === 'number' && !isNaN(position.right)) right = position.right;
-      const winW = window.innerWidth; const winH = window.innerHeight;
-      if (top < 0 || top > winH - 50) top = 20; if (right < 0 || right > winW - 50) right = 20;
-    }
-    host.style.cssText = `position: fixed; top: ${top}px; right: ${right}px; z-index: 2147483647; width: 0; height: 0;`;
-    document.body.appendChild(host);
+    // Inline style just for Z-Index/Fixed to ensure it sits on top before Shadow CSS loads
+    // But mainly relies on Shadow :host style now.
+    // Appending to documentElement (html) is safer against body transforms.
+    (document.documentElement || document.body).appendChild(host);
     this.shadowRoot = host.attachShadow({ mode: "open" });
     this.render();
   }
@@ -451,14 +489,24 @@ class SpotterUI {
   }
 
   async refreshUI() {
-    const data = await chrome.storage.local.get(["lists", "formCategories", "aiSettings"]);
-    this.renderLists(data.lists || []);
-    this.formCategories = data.formCategories || [];
-    if (this.activeCatIndex >= this.formCategories.length) this.activeCatIndex = 0;
-    this.aiPrompts = (data.aiSettings && data.aiSettings.prompts) ? data.aiSettings.prompts : [];
-    if (this.activePromptIndex >= this.aiPrompts.length) this.activePromptIndex = 0;
-    this.refreshFormsView();
-    this.refreshAIView();
+    console.log("Spotter: refreshUI started");
+    try {
+        const data = await chrome.storage.local.get(["lists", "formCategories", "aiSettings"]);
+        console.log("Spotter: Data loaded", { 
+            listsCount: (data.lists || []).length, 
+            categoriesCount: (data.formCategories || []).length 
+        });
+        
+        this.renderLists(data.lists || []);
+        this.formCategories = data.formCategories || [];
+        if (this.activeCatIndex >= this.formCategories.length) this.activeCatIndex = 0;
+        this.aiPrompts = (data.aiSettings && data.aiSettings.prompts) ? data.aiSettings.prompts : [];
+        if (this.activePromptIndex >= this.aiPrompts.length) this.activePromptIndex = 0;
+        this.refreshFormsView();
+        this.refreshAIView();
+    } catch (e) {
+        console.error("Spotter: Error in refreshUI", e);
+    }
   }
 
   changeCat(delta) {
@@ -491,85 +539,188 @@ class SpotterUI {
       const titleEl = this.shadowRoot.getElementById("current-prompt-title");
       const prevBtn = this.shadowRoot.getElementById("prev-prompt-btn");
       const nextBtn = this.shadowRoot.getElementById("next-prompt-btn");
+      const varsContainer = this.shadowRoot.getElementById("ai-variables");
+      
+      varsContainer.innerHTML = ""; // Clear existing
+
       if (this.aiPrompts.length === 0) { titleEl.textContent = "Aucun prompt"; prevBtn.disabled = nextBtn.disabled = true; return; }
+      
       const currentPrompt = this.aiPrompts[this.activePromptIndex];
       titleEl.textContent = currentPrompt.name;
       const multi = this.aiPrompts.length > 1;
       prevBtn.disabled = nextBtn.disabled = !multi;
+      
+      // Render Variables
+      if (currentPrompt.variables && currentPrompt.variables.length > 0) {
+          currentPrompt.variables.forEach(v => {
+              // Only render if options exist
+              if(v.options && v.options.length > 0) {
+                  const wrapper = document.createElement("div");
+                  wrapper.className = "ai-var-wrapper";
+                  
+                  const label = document.createElement("label");
+                  label.textContent = v.name;
+                  label.style.fontSize = "12px";
+                  label.style.fontWeight = "600";
+                  label.style.color = "#64748b";
+                  label.style.marginBottom = "4px";
+                  label.style.display = "block";
+                  
+                  const select = document.createElement("select");
+                  select.className = "ai-var-select";
+                  select.setAttribute("data-var-name", v.name);
+                  select.style.width = "100%";
+                  select.style.padding = "8px";
+                  select.style.border = "1px solid #cbd5e1";
+                  select.style.borderRadius = "6px";
+                  select.style.fontSize = "13px";
+                  select.style.color = "#334155";
+                  select.style.background = "white";
+                  
+                  v.options.forEach(opt => {
+                      const option = document.createElement("option");
+                      option.value = opt.value;
+                      option.textContent = opt.label;
+                      select.appendChild(option);
+                  });
+                  
+                  wrapper.appendChild(label);
+                  wrapper.appendChild(select);
+                  varsContainer.appendChild(wrapper);
+              }
+          });
+      }
   }
 
   refreshFormsView() {
+      console.log("Spotter: refreshFormsView start");
       const catTitle = this.shadowRoot.getElementById("current-cat-title");
       const groupTitle = this.shadowRoot.getElementById("current-group-title");
       const container = this.shadowRoot.getElementById("forms-rows");
+      
       const prevCat = this.shadowRoot.getElementById("prev-cat-btn");
       const nextCat = this.shadowRoot.getElementById("next-cat-btn");
       const prevGroup = this.shadowRoot.getElementById("prev-group-btn");
       const nextGroup = this.shadowRoot.getElementById("next-group-btn");
+
+      if (!container) { console.error("Spotter: Forms container not found"); return; }
+
+      // Safe Clear
+      try { container.innerHTML = ""; } 
+      catch (e) { while (container.firstChild) container.removeChild(container.firstChild); }
+
+      const showMsg = (msg) => {
+          const div = document.createElement("div");
+          div.style.cssText = "color:#94a3b8; text-align:center; padding:15px; font-size:13px;";
+          div.textContent = msg;
+          container.appendChild(div);
+      };
+
       if (this.formCategories.length === 0) {
           catTitle.textContent = "Aucune catégorie"; groupTitle.textContent = "-";
-          container.innerHTML = '<div style="color:#94a3b8; text-align:center; padding:15px; font-size:13px;">Rien à afficher</div>';
+          showMsg("Rien à afficher");
           prevCat.disabled = nextCat.disabled = prevGroup.disabled = nextGroup.disabled = true; return;
       }
+
       const currentCat = this.formCategories[this.activeCatIndex];
       catTitle.textContent = currentCat.name;
       const multiCat = this.formCategories.length > 1;
       prevCat.disabled = nextCat.disabled = !multiCat;
+
       if (!currentCat.groups || currentCat.groups.length === 0) {
           groupTitle.textContent = "Aucun formulaire";
-          container.innerHTML = '<div style="color:#94a3b8; text-align:center; padding:15px; font-size:13px;">Catégorie vide</div>';
+          showMsg("Catégorie vide");
           prevGroup.disabled = nextGroup.disabled = true; return;
       }
+
       if (this.activeGroupIndex >= currentCat.groups.length) this.activeGroupIndex = 0;
       const currentGroup = currentCat.groups[this.activeGroupIndex];
       groupTitle.textContent = currentGroup.name;
       const multiGroup = currentCat.groups.length > 1;
       prevGroup.disabled = nextGroup.disabled = !multiGroup;
-      container.innerHTML = "";
+
       const validFields = (currentGroup.fields || []).filter(f => f.label || f.value || f.type === 'separator');
-      if (validFields.length === 0) { container.innerHTML = '<div style="color:#94a3b8; text-align:center; padding:15px; font-size:13px;">Formulaire vide</div>'; return; }
+      if (validFields.length === 0) { showMsg("Formulaire vide"); return; }
+
       validFields.forEach(form => {
-        const item = document.createElement("div");
-        if (form.type === 'separator') { item.className = "form-item separator-item"; const line = document.createElement("div"); line.className = "separator-line"; item.appendChild(line); } 
-        else {
-            item.className = "form-item"; const info = document.createElement("div"); info.className = "form-info";
-            const label = document.createElement("span"); label.className = "form-label"; label.textContent = form.label || "Sans titre";
-            const value = document.createElement("span"); value.className = "form-value"; value.textContent = form.value;
-            info.append(label, value);
-            const copyBtn = document.createElement("button"); copyBtn.className = "copy-btn";
-            copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-            copyBtn.onclick = (e) => {
-                e.stopPropagation();
-                navigator.clipboard.writeText(form.value).then(() => {
-                    const originalHTML = copyBtn.innerHTML;
-                    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                    copyBtn.classList.add("copy-success");
-                    setTimeout(() => { copyBtn.innerHTML = originalHTML; copyBtn.classList.remove("copy-success"); }, 1500);
-                });
-            };
-            item.append(info, copyBtn);
+        try {
+            const item = document.createElement("div");
+            if (form.type === 'separator') { 
+                item.className = "form-item separator-item"; 
+                const line = document.createElement("div"); line.className = "separator-line"; item.appendChild(line); 
+            } else {
+                item.className = "form-item"; 
+                const info = document.createElement("div"); info.className = "form-info";
+                const label = document.createElement("span"); label.className = "form-label"; label.textContent = form.label || "Sans titre";
+                const value = document.createElement("span"); value.className = "form-value"; value.textContent = form.value;
+                info.append(label, value);
+                
+                const copyBtn = document.createElement("button"); copyBtn.className = "copy-btn";
+                // SVG creation via DOM to avoid innerHTML if possible, but innerHTML for small SVG icon is usually fine if not sinking user input
+                // Or stick to innerHTML for icon inside button if simpler, hoping button innerHTML isn't strictly blocked if it's static
+                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+                
+                copyBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(form.value).then(() => {
+                        const originalHTML = copyBtn.innerHTML;
+                        copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                        copyBtn.classList.add("copy-success");
+                        setTimeout(() => { copyBtn.innerHTML = originalHTML; copyBtn.classList.remove("copy-success"); }, 1500);
+                    });
+                };
+                item.append(info, copyBtn);
+            }
+            container.appendChild(item);
+        } catch (err) {
+            console.error("Spotter: Error rendering form item", err);
         }
-        container.appendChild(item);
       });
   }
 
   renderLists(lists) {
+    console.log("Spotter: renderLists start", { count: lists.length });
     const listContainer = this.shadowRoot.getElementById("lists-rows");
-    listContainer.innerHTML = "";
-    if (lists.length === 0) { listContainer.innerHTML = '<div style="color:#94a3b8; text-align:center; padding:15px; font-size:13px;">Aucune liste active</div>'; return; }
+    
+    if (!listContainer) {
+        console.error("Spotter: Critical - Element #lists-rows not found");
+        return;
+    }
+
+    // Safe Clear
+    try {
+        listContainer.innerHTML = "";
+    } catch (e) {
+        console.warn("Spotter: innerHTML clear failed (CSP?), using fallback", e);
+        while (listContainer.firstChild) listContainer.removeChild(listContainer.firstChild);
+    }
+
+    if (lists.length === 0) { 
+        const msg = document.createElement("div");
+        msg.style.cssText = "color:#94a3b8; text-align:center; padding:15px; font-size:13px;";
+        msg.textContent = "Aucune liste active";
+        listContainer.appendChild(msg);
+        return; 
+    }
+
     lists.forEach((list) => {
-      const row = document.createElement("div"); row.className = "list-row";
-      const dot = document.createElement("span"); dot.className = "color-dot"; dot.style.backgroundColor = list.color;
-      const name = document.createElement("span"); name.className = "list-name"; name.textContent = list.name;
-      const label = document.createElement("label"); label.className = "switch";
-      const input = document.createElement("input"); input.type = "checkbox"; input.checked = list.enabled;
-      input.onchange = async (e) => {
-        const newState = e.target.checked; const currentData = await chrome.storage.local.get("lists"); const currentLists = currentData.lists || [];
-        const targetIdx = currentLists.findIndex((l) => l.id === list.id);
-        if (targetIdx !== -1) { currentLists[targetIdx].enabled = newState; await chrome.storage.local.set({ lists: currentLists }); if (this.highlighter.isActive) { this.highlighter.reApply(); } }
-      };
-      const slider = document.createElement("span"); slider.className = "slider";
-      label.append(input, slider); row.append(dot, name, label); listContainer.appendChild(row);
+      console.log("Spotter: Rendering list", list.name);
+      try {
+          const row = document.createElement("div"); row.className = "list-row";
+          const dot = document.createElement("span"); dot.className = "color-dot"; dot.style.backgroundColor = list.color;
+          const name = document.createElement("span"); name.className = "list-name"; name.textContent = list.name;
+          const label = document.createElement("label"); label.className = "switch";
+          const input = document.createElement("input"); input.type = "checkbox"; input.checked = list.enabled;
+          input.onchange = async (e) => {
+            const newState = e.target.checked; const currentData = await chrome.storage.local.get("lists"); const currentLists = currentData.lists || [];
+            const targetIdx = currentLists.findIndex((l) => l.id === list.id);
+            if (targetIdx !== -1) { currentLists[targetIdx].enabled = newState; await chrome.storage.local.set({ lists: currentLists }); if (this.highlighter.isActive) { this.highlighter.reApply(); } }
+          };
+          const slider = document.createElement("span"); slider.className = "slider";
+          label.append(input, slider); row.append(dot, name, label); listContainer.appendChild(row);
+      } catch (err) {
+          console.error("Spotter: Error rendering list item", list.name, err);
+      }
     });
   }
   updateState() {
@@ -582,8 +733,18 @@ class SpotterUI {
 class SpotterHighlighter {
   constructor() {
     this.isActive = false; this.lists = []; this.matchVariations = false; this.listProcessors = []; this.observer = null; this.debounceTimer = null;
+    this.selectionDebounce = null;
     this.ui = new SpotterUI(this); 
-    this.restoreState(); this.listen(); this.listenStorage();
+    this.restoreState(); this.listen(); this.listenStorage(); this.listenSelection();
+  }
+  listenSelection() {
+    document.addEventListener("selectionchange", () => {
+        clearTimeout(this.selectionDebounce);
+        this.selectionDebounce = setTimeout(() => {
+            const selection = window.getSelection().toString();
+            chrome.runtime.sendMessage({ action: "updateSelectionCount", count: selection.length });
+        }, 300);
+    });
   }
   listen() {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
