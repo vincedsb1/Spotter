@@ -206,12 +206,36 @@ class SpotterUI {
         .ai-btn:disabled { background: #94a3b8; cursor: not-allowed; }
         .ai-status { font-size: 12px; color: #ef4444; text-align: center; min-height: 16px; flex-shrink: 0; }
         .nav-row.prompt-row { background: #e0f2fe; color: #1e40af; margin-bottom: 8px; flex-shrink: 0; }
+        
+        /* Custom Tooltip */
+        .spotter-tooltip {
+            position: fixed;
+            background: #1e293b;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 2147483647;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s ease-in-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            white-space: pre-wrap; /* Allow wrapping if needed, or nowrap */
+            max-width: 300px;
+            word-wrap: break-word;
+            display: none; /* Hidden by default */
+        }
+        .spotter-tooltip.visible {
+            opacity: 1;
+            display: block;
+        }
       </style>
     `;
 
     const container = document.createElement("div");
     container.innerHTML = `
       ${style}
+      <div id="spotter-custom-tooltip" class="spotter-tooltip"></div>
       <div class="fab ${this.highlighter.isActive ? "active" : "inactive"}" id="spotter-fab" title="Ouvrir / Verrouiller">
         <div id="fab-content">
             <img src="${iconUrl}" alt="Spotter" draggable="false">
@@ -415,6 +439,10 @@ class SpotterUI {
     document.addEventListener("click", () => { if (this.isOpen && !this.isLocked) { this.closeMenu(); } });
     menu.addEventListener("click", (e) => e.stopPropagation());
     mainToggle.addEventListener("click", async () => { await this.highlighter.toggle(); this.updateState(); });
+
+    // Tooltip for nav titles
+    this.handleTooltip(this.shadowRoot.getElementById("current-cat-title"));
+    this.handleTooltip(this.shadowRoot.getElementById("current-group-title"));
   }
 
   // Adjusted Logic: Simply cap max-height via CSS calc based on viewport
@@ -486,6 +514,47 @@ class SpotterUI {
       pressTimer = setTimeout(() => { isLongPress = true; el.style.cursor = "grabbing"; document.addEventListener("mousemove", onMouseMove); document.addEventListener("mouseup", onMouseUp); }, LONG_PRESS_THRESHOLD);
       document.addEventListener("mouseup", onMouseUp);
     });
+  }
+
+  handleTooltip(el) {
+    const tooltip = this.shadowRoot.getElementById("spotter-custom-tooltip");
+    let timer;
+
+    const show = () => {
+        if (el.scrollWidth <= el.clientWidth) return;
+        
+        tooltip.textContent = el.textContent;
+        tooltip.classList.add("visible");
+        
+        const rect = el.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        let top = rect.bottom + 5;
+        let left = rect.left;
+
+        // Boundary check (viewport)
+        if (top + tooltipRect.height > window.innerHeight) {
+            top = rect.top - tooltipRect.height - 5;
+        }
+        if (left + tooltipRect.width > window.innerWidth) {
+            left = window.innerWidth - tooltipRect.width - 10;
+        }
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+    };
+
+    const hide = () => {
+        clearTimeout(timer);
+        tooltip.classList.remove("visible");
+    };
+
+    el.addEventListener("mouseenter", () => {
+        timer = setTimeout(show, 100); // 100ms delay (faster than native)
+    });
+    
+    el.addEventListener("mouseleave", hide);
+    el.addEventListener("mousedown", hide); // Hide on click
   }
 
   async refreshUI() {
@@ -653,6 +722,10 @@ class SpotterUI {
                 const info = document.createElement("div"); info.className = "form-info";
                 const label = document.createElement("span"); label.className = "form-label"; label.textContent = form.label || "Sans titre";
                 const value = document.createElement("span"); value.className = "form-value"; value.textContent = form.value;
+
+                this.handleTooltip(label);
+                this.handleTooltip(value);
+
                 info.append(label, value);
                 
                 const copyBtn = document.createElement("button"); copyBtn.className = "copy-btn";
